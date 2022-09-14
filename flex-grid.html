@@ -1,0 +1,31 @@
+{% require_css %}
+<style>
+	
+{### THE MACRO ###}
+{% macro flex_grid(obj, break, col_num, vert_spacing, horiz_spacing) %}
+  {% set width =  1 / col_num * 100 %}
+  {% set row_two = col_num + 1 %}
+  {% set next = break + 1 %}
+  {% set margin_adjust = horiz_spacing * ((col_num - 1) / col_num) %}
+  @media screen and (max-width: {{ break }}px) { {{ obj }} > *:not(:last-child) { margin-bottom: {{ vert_spacing }}px; } }
+  @media screen and (min-width: {{ next }}px) { 
+    {{ obj }} { display: flex; flex-wrap: wrap; }
+    {{ obj }} > * { display: inline-block; width: calc({{ width }}% - {{ margin_adjust }}px); margin-right: {{ horiz_spacing }}px !important; margin-bottom: 0; }
+    {{ obj }} > *:nth-child({{ col_num }}n) { margin-right: 0 !important; }
+    {{ obj }} > *:nth-child(1n+{{ row_two }}) { margin-top:  {{ vert_spacing }}px; }
+  }		
+{% endmacro %}
+
+{### USING THE MACRO ###}
+{#
+	obj				=		CSS selector of parent row of objects to be flexed
+	break 			=		mobile break point where items are full-width
+	col_num			=		number of items per row
+	vert_spacing	=		space between items vertically
+	horiz_spacing	=		space between items horizontally
+#}
+
+{{ flex_grid(".css-selector", 1000, 3, 20, 20) }}
+
+</style>
+{% end_require_css %}

@@ -1,0 +1,128 @@
+{#
+	PLUGIN INFO
+	-----------
+	documentation: https://owlcarousel2.github.io/OwlCarousel2/
+	assets: owl.carousel.min.css, owl.theme.min.css, owl.carousel.min.js
+#}
+
+{% require_css %}
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" integrity="sha512-tS3S5qG0BlhnQROyJXvNjeEM4UpMXHrQfTGmbQ1gKmelCxlSEBUaxhRBj/EFTzpbP4RVSrpEikbmdJobCvhE3g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" integrity="sha512-sMXtMNL1zRzolHYKEujM2AqCLUR9F2C4/05cdbxjjLSRvMQIciEPCQZo++nk7go3BtSuK9kfa/s+a4f4i5pLkw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% end_require_css %}
+
+
+{#
+	SLIDER OPTIONS
+	--------------
+	add boolean controls to module in a field group called slider_options > behavior_options
+	add number field to module in a field group called slider_options > responsive_options
+#}
+
+{% set dots = module.slider_options.display_options.dots %}
+{% set spacing = module.slider_options.display_options.spacing %}
+{% set nav = module.slider_options.display_options.navigation %}
+{% set loop = module.slider_options.behavior_options.loop %}
+{% set dots = module.slider_options.behavior_options.center %}
+{% set autoplay = module.slider_options.behavior_options.autoplay %}
+{% set timing = module.slider_options.behavior_options.timing %}
+{% set desktop = module.slider_options.responsive_options.visible_on_desktop %}
+{% set tablet = module.slider_options.responsive_options.visible_on_tablet %}
+{% set mobile = module.slider_options.responsive_options.visible_on_mobile %}
+
+
+{#
+	SLIDER OBJECTS
+	--------------
+	create repeater object for slides
+	include options as data in slider wrap
+#}
+
+{# SLIDER SLIDE #}
+{% macro render_slide(slide) %}
+	<div class="custom-carousel__slide">
+		
+	</div>
+{% endmacro %}
+
+{# SLIDER CAROUSEL #}
+<div class="custom-carousel owl-carousel" data-dots="{{ dots if dots else "true" }}" data-spacing="{{ spacing }}"  data-nav="{{ nav if nav else "true" }}" data-loop="{{ loop if loop else "true" }}" data-center="{{ center if center else "true" }}" data-autoplay="{{ autoplay if autoplay else "false" }}" data-timing="{{ timing if timing }}" data-desktop="{{ desktop if desktop else "3" }}" data-tablet="{{ tablet if tablet else "2" }}" data-mobile="{{ mobile if mobile else "1" }}">
+	{% for slide in module.slides %}
+		{{ render_slide(slide) }}
+	{% endfor %}
+</div>
+
+
+{#
+	SLIDER SCRIPTS
+	--------------
+	handle load - get options and initiate slider
+	handle resize - destroy and re-initiate slider if window is resized to prevent style weirdness
+#}
+
+{% require_js position="footer" defer=true %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js" integrity="sha512-bPs7Ae6pVvhOSiIcyUClR7/q2OAsRiovw4vAkX+zJbw3ShAeeqezq50RIIcIURq7Oa20rW2n2q+fyXBNcU9lrw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+	
+  $(document).ready(function() {
+	  
+    var carousel = $('.custom-carousel');
+    
+    var init_carousel = function() {
+	    carousel.each(function() {
+	        var loop = $(this).data('loop'),
+	            center = $(this).data('center'),
+	            spacing = $(this).data('spacing'),
+	            autoplay = $(this).data('autoplay'),
+	            autoheight = $(this).data('autoheight'),
+	            timing = $(this).data('timing'),
+	            type = $(this).data('type'),
+	            dots = $(this).data('dots'),
+	            nav = $(this).data('nav'),
+	            desktopItems = $(this).data('desktop'),
+	            tabletItems = $(this).data('tablet'),
+	            mobileItems = $(this).data('mobile');
+	
+	      if (type == "video") { var video = true } else { var video = false }
+	      if (autoplay) { var singleItem = true } else { var singleItem = false }
+	
+	      $(this).owlCarousel({
+	        loop:loop,
+	        center: center,
+	        margin:spacing,
+	        nav:nav,
+	        dots:dots,
+	        autoplay:autoplay,
+	        autoheight:autoheight,
+	        singleItem: singleItem,
+	        autoplayTimeout:timing,
+	        autoplayHoverPause:true,
+	        video:video,
+	        responsive:{
+	          0:{
+	            items:mobileItems
+	          },
+	          787:{
+	            items:tabletItems
+	          },
+	          1200:{
+	            items:desktopItems
+	          }
+	        } 
+	      });
+	    });
+	},
+	owlResize = function(carousel) {
+	    carousel.trigger('destroy.owl.carousel');
+	    carousel.html(carousel.find('.owl-stage-outer').html()).removeClass('owl-loaded');
+	    init_carousel(carousel);
+	};
+
+    init_carousel(carousel);
+    $(window).resize(function() {
+      owlResize(carousel);
+    });
+
+  });
+  
+</script>
+{% end_require_js %}

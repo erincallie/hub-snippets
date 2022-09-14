@@ -1,0 +1,259 @@
+{% macro macro_name(var) %}
+{{ caller }}
+{% endmacro %}
+
+{% call macro_name(var) %}
+// content
+{% endcall %}
+
+{% macro checkbox_filters(categories) %}
+<ul class="filter filter--dropdown">
+    {% for category in categories %}
+        <li>{{ category }}<input data-filter=".{{ slugify(category)|trim }}" type="checkbox" id="{{ slugify(category)|trim }}" name="filter" value="{{ category }}"></li>
+    {% endfor %}
+</ul>
+{% endmacro %}
+
+{% macro color(value) %}
+{% set colorhex = value.color|convert_rgb %}
+{% if value.opacity != null %}
+    {% set coloropacity = value.opacity / 100 %}
+{% else %}
+    {% set coloropacity = '1' %}
+{% endif %}
+rgba({{ colorhex }}, {{ coloropacity }})
+{% endmacro %}
+
+{% macro format_post(post) %}
+<div class="blog__block">
+    <div class="blog__block-image" {% if post.featured_image %}style="background-image:url('{{ post.featured_image }}');"{% endif %}>
+        <img src="{{ post.featured_image }}" alt="{{ post.featured_image_alt_text }}" width="100" height="100">
+    </div>
+    <div class="blog__block-wrap">
+        <div class="blog__block-title"><h3>{{ post.name }}</h3></div>
+        <div class="blog__block-author">{{ post.blog_post_author }}</div>
+        {% if post.topic_list %}
+            <div class="blog__block-topics"><i class="fas fa-tag"></i>
+                {% for topic in post.topic_list %}
+                    <span>{{ topic }}{% unless loop.last %},{% endunless %}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <div class="blog__block-content">{{ post.post_list_content|truncatehtml(250) }}</div>
+        <div class="blog__block-cta">
+            <div class="button-wrap">
+                <a href="{{ post.absolute_url }}" class="hs-button button button--primary">Read More</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro transition(value) %}-webkit-transition: {{ value }};-moz-transition: {{ value }};-o-transition: {{ value }};-ms-transition: {{ value }};transition: {{ value }};{% endmacro %}
+{% macro borderRadius(value) %}-webkit-border-radius: {{ value }};-moz-border-radius: {{ value }};-o-border-radius: {{ value }};-ms-border-radius: {{ value }};border-radius: {{ value }};{% endmacro %}
+{% macro boxShadow(value) %}-webkit-box-shadow: {{ value }};-moz-box-shadow: {{ value }};-o-box-shadow: {{ value }};-ms-box-shadow: {{ value }};box-shadow: {{ value }};{% endmacro %}
+{% macro textShadow(value) %}-webkit-text-shadow: {{ value }};-moz-text-shadow: {{ value }};-o-text-shadow: {{ value }};-ms-text-shadow: {{ value }};text-shadow: {{ value }};{% endmacro %}
+{% macro transform(value) %}-webkit-transform: {{ value }};-moz-transform: {{ value }};-o-transform: {{ value }};-ms-transform: {{ value }}; transform: {{ value }};{% endmacro %}
+
+{% macro dropdown_filters(title, filters) %}
+<ul class="filter filter--dropdown">
+    <li class="show-options">
+        <a data-title="{{ slugify(title) }}">{{ title }}</a>
+        {{ svg_icon("caret-down") }}
+    </li>
+    <li class="filter__options">
+        <ul>
+            <li><a class="show-all" data-filter="*">Show All {{ title }}</a></li>
+            {% for filter in filters %}
+                <li><a data-filter=".{{ name }}__tag--{{ slugify(filter) }}">{{ filter }}</a></li>
+            {% endfor %}
+        </ul>
+    </li>
+</ul>
+{% endmacro %}
+
+{% macro render_repeater(item) %}
+<div class="module-name__item module-item">
+    <div class="module-item__image" style="background-image:url('{{ item.img.src }}');">
+        <img src="{{ item.img.src }}" width="{{ item.img.width }}" height="{{ item.img.height }}" alt="{{ item.img.alt }}" style="width:100%;height:0;overflow:hidden;" />
+    </div>
+    <div class="module-item__content">
+        {{ item.content }}
+    </div>
+</div>
+{% endmacro %}
+
+<div id="{{ name }}" class="module-name">
+<div class="module-name__section">
+    <div class="module-name__container">
+        <div class="module-name__row">
+        {% for item in module.items %}
+            {{ render_repeater(item) }}
+        {% endfor %}
+        </div>
+    </div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/ysexitpopup@1.0.2/index.min.js"></script>
+<script>
+var exit_intent = $('.module.exit');
+if (exit_intent.length > 0) {
+    exit_intent.ysExit({
+        width: '40%',
+        height: '30%', 
+        target: '#ys-container', 
+        cookieValidity: 1, 
+        closeOnOutsideClick: true, 
+        delay: 0, 
+        debug: false,
+        cookieName: 'ysExit'
+    });
+}
+</script>
+
+{% macro flex_grid(obj, break, col_num, vert_spacing, horiz_spacing) %}
+{% set width =  1 / col_num * 100 %}
+{% set row_two = col_num + 1 %}
+{% set next = break + 1 %}
+{% set margin_adjust = horiz_spacing * ((col_num - 1) / col_num) %}
+@media screen and (max-width: {{ break }}px) { {{ obj }} > *:not(:last-child) { margin-bottom: {{ vert_spacing }}px; } }
+@media screen and (min-width: {{ next }}px) {
+    {{ obj }} { display: flex; flex-wrap: wrap; }
+    {{ obj }} > * { display: inline-block; width: calc({{ width }}% - {{ margin_adjust }}px); margin-right: {{ horiz_spacing }}px !important; margin-bottom: 0; }
+    {{ obj }} > *:nth-child({{ col_num }}n) { margin-right: 0 !important; }
+    {{ obj }} > *:nth-child(1n+{{ row_two }}) { margin-top:  {{ vert_spacing }}px; }
+}
+{% endmacro %}
+
+{{ flex_grid(".module-name__row", 767, 3, 20, 20) }}
+
+{% for item in items %}
+{{ item }}
+{% endfor %}
+
+{% if something %}
+
+{% endif %}
+
+<div class="module">
+<div class="module__modal">
+    <div class="module__modal-container">
+        {{ close_svg() }}
+        <div class="module__modal-content">
+            
+        </div>
+    </div>
+</div>
+</div>
+
+#{{ name }} {
+    background: {{ module.style.cta_styles.background_options.background_color.css }};
+    {% if module.style.cta_styles.background_options.background == "gradient" %}
+    background-image: {{ module.style.cta_styles.background_options.background_gradient.css }};
+    {% else %}
+    {{ module.style.cta_styles.background_options.background_image.css }}
+    {% endif %}
+    {{ module.style.cta_styles.spacing_options.spacing.css }}
+    {{ module.style.cta_styles.border_options.border.css }}
+    {{ module.style.cta_styles.alignment_options.text_alignment.css }};
+    {{ borderRadius(module.style.cta_styles.border_options.border_radius + "px") }}
+    overflow: hidden;
+}
+{% if module.style.cta_styles.background_options.add_overlay == true %}
+    #{{ section_id }}:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    {% if module.style.cta_styles.background_options.overlay_options.overlay_background == "color" %}
+        background: {{ module.style.cta_styles.background_options.overlay_options.overlay_background_color.css }};
+    {% else if module.style.cta_styles.background_options.overlay_options.overlay_background == "gradient" %}
+        {{ module.style.cta_styles.background_options.overlay_options.overlay_background_gradient.css }}
+    {% else %}
+        {{ module.style.cta_styles.background_options.overlay_options.overlay_background_image.css }}
+    {% endif %}
+    }
+{% endif %}
+
+{% macro slugify(string) %}
+    {{ string|lower|replace(" ", "_")|replace("&", "and")|trim }}
+{% endmacro %}
+
+{% macro scale_text(min_fs, max_fs, min_vp, max_vp, object) %}
+.scale-text {{ object }} {
+    font-size: {{ min_fs }}px;
+}
+@media screen and (min-width: {{ min_vp }}px) {
+    .scale-text {{ object }} {
+        font-size: calc({{ min_fs }}px + ({{ max_fs }} - {{ min_fs }}) * ((100vw - {{ min_vp }}px) / ({{ max_vp }} - {{ min_vp }})));
+            }
+}
+@media screen and (min-width: {{ max_vp }}px) {
+    .scale-text {{ object }} {
+        font-size: {{ max_fs }}px;
+    }
+}
+{% endmacro %}
+
+{{ scale_text(34, 74, 320, 1300, 'h1.scale-text') }}
+{{ scale_text(14, 56, 320, 1300, 'h2.scale-text') }}
+
+{% require_css %}
+    <style>
+
+    </style>
+{% end_require_css %}
+
+{{ require_js("https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js", "footer") }}
+
+{{ require_js("https://code.jquery.com/jquery-3.6.0.min.js", "footer") }}
+
+{% require_js position="footer" %}
+    <script>
+        $(document).ready(function() {
+
+        });
+    </script>
+{% end_require_js %}
+
+{% require_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" integrity="sha512-tS3S5qG0BlhnQROyJXvNjeEM4UpMXHrQfTGmbQ1gKmelCxlSEBUaxhRBj/EFTzpbP4RVSrpEikbmdJobCvhE3g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" integrity="sha512-sMXtMNL1zRzolHYKEujM2AqCLUR9F2C4/05cdbxjjLSRvMQIciEPCQZo++nk7go3BtSuK9kfa/s+a4f4i5pLkw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% end_require_css %}
+{% require_js position="footer" defer=true %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js" integrity="sha512-bPs7Ae6pVvhOSiIcyUClR7/q2OAsRiovw4vAkX+zJbw3ShAeeqezq50RIIcIURq7Oa20rW2n2q+fyXBNcU9lrw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{% end_require_js %}
+
+{{ require_js("https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js", "footer", defer=true) }}
+
+{% if module.video_src == "vidyard" %}
+    <iframe src="//play.vidyard.com/{{ module.video_id }}" width='1080' height='720' style="max-width:100%; height: auto;aspect-ratio: 16 / 9;" scrolling="no" frameborder="0" allowtransparency="true" allowfullscreen="true"></iframe>
+{% elif module.video_src == "youtube" %}
+    <iframe src='https://www.youtube.com/embed/{{ module.video_id }}?rel=0&controls=0&modestbranding=1&showinfo=0' width='1080' height='720' style="max-width:100%; height: auto;aspect-ratio: 16 / 9;" frameborder='0' allowfullscreen></iframe>
+{% elif module.video_src == "vimeo" %}
+    <iframe src='https://player.vimeo.com/video/{{ module.video_id }}' width='1080' height='720' style="max-width:100%; height: auto;aspect-ratio: 16 / 9;"  frameborder='0' webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+{% elif module.video_src == "wistia" %}
+    <script src="//fast.wistia.com/embed/medias/s3lqfi0zn7.jsonp" async></script>
+    <script src="//fast.wistia.com/assets/external/E-v1.js" async></script>
+    <div class="wistia_embed wistia_async_{{ module.video_id }}"  width='1080' height='720' style="max-width:100%; height: auto;aspect-ratio: 16 / 9;">&nbsp;</div>                      
+{% else %}
+    {% if module.video.player_id %}
+            {% set max_width = module.video.size_type == 'auto_custom_max' ? module.video.max_width : module.video.width %}
+            {% set max_height = module.video.size_type == 'auto_custom_max' ? module.video.max_height : module.video.height %}
+            {% video_player "embed_player"
+                    player_id={{ module.video.player_id }}
+                    type={{ module.video.player_type || 'scriptV4' }}
+                    full_width={{ module.video.size_type == 'auto_full_width' }},
+                    conversion_asset={{ module.video.conversion_asset|tojson|safe }}
+            %}
+        {% endif %}
+{% endif %}
+
+{% macro svg_icon(name) %}
+    {% if name == "this_icon" %}
+        <svg id="this_icon"></svg>
+    {% endif %}
+{% endmacro %}

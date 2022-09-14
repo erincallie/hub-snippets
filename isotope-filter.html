@@ -1,0 +1,222 @@
+{#
+	PLUGIN INFO
+	-----------
+	documentation: https://isotope.metafizzy.co/
+	assets: isotope.pkgd.min.js
+#}
+
+{#
+	ISOTOPE OBJECTS
+	--------------
+	search object
+	slugify - turn a text string into a code-friendly slug
+	filter objects
+	render items
+#}
+
+{% macro svg_icon(name) %}
+  {% if name == "caret-down" %}
+  	  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M310.6 246.6l-127.1 128C176.4 380.9 168.2 384 160 384s-16.38-3.125-22.63-9.375l-127.1-128C.2244 237.5-2.516 223.7 2.438 211.8S19.07 192 32 192h255.1c12.94 0 24.62 7.781 29.58 19.75S319.8 237.5 310.6 246.6z"/></svg>
+  {% endif %}
+{% endmacro %}
+
+{% macro isotope_search() %}
+  <input id="isotope_search" name="isotope_search" value="" placeholder="SEARCH" />
+{% endmacro %}
+
+{% macro slugify(string) %}
+  {{ string|lower|replace(" ", "_")|replace("&", "and")|trim }}
+{% endmacro %}
+
+
+{% macro get_categories(items) %}
+  {% set categories = [] %}
+  {% for item in items %}
+    {% for category in item.categories %}
+      {% do categories.append(category) %}
+    {% endfor %}
+  {% endfor %}
+  {{ categories|unique }}
+{% endmacro %}
+
+{% macro checkbox_filters(categories) %}
+	<ul class="filter filter--dropdown">
+	  {% for category in categories %}
+	    <li>{{ category }}<input data-filter=".{{ slugify(category)|trim }}" type="checkbox" id="{{ slugify(category)|trim }}" name="filter" value="{{ category }}"></li>
+	  {% endfor %}
+	</ul>
+{% endmacro %}
+
+{% macro dropdown_filters(title, filters) %}
+<ul class="filter filter--dropdown">
+	<li class="show-options">
+		<a data-title="{{ slugify(title) }}">{{ title }}</a>
+		{{ svg_icon("caret-down") }}
+	</li>
+	<li class="filter__options">
+		<ul>
+		  <li><a class="show-all" data-filter="*">Show All {{ title }}</a></li>
+		  {% for filter in filters %}
+		    <li><a data-filter=".{{ name }}__tag--{{ slugify(filter) }}">{{ filter }}</a></li>
+		  {% endfor %}
+		</ul>
+	</li>
+</ul>
+{% endmacro %}
+
+{% macro list_filters(title, filters) %}
+	<ul class="filter filter--list">
+	  <li class="active"><a data-filter="*">All {{ title }}</a></li>
+	  {% for filter in filters %}
+	  <li>
+	    <a data-filter=".{{ name }}__tag--{{ slugify(filter) }}">{{ filter }}</a>
+	  </li>
+	  {% endfor %}
+	</ul>
+{% endmacro %}
+
+
+{% macro render_item(item) %}
+  {% set classes = [] %}
+  {% for category in item.categories %}
+    {% do classes.append(slugify(category)) %}
+  {% endfor %}
+  <a href="{{ recipe.link.url.href }}" class="isotope-list__item item {{ classes|join|trim }}">
+    <div class="item__image" style="background-image: url('{{ item.image.src }}');">
+      <img src="{{ item.image.src }}" width="{{ item.image.width }}" height="{{ item.image.height }}" alt="{{ item.title }}" />
+    </div>
+    <div class="item__title">
+      <h3>{{ item.title }}</h3>
+    </div>
+    <div class="item__categories">
+      <ul>
+        {% for category in item.categories %}
+          <li>{{ category }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </a>
+{% endmacro %}
+
+{#
+	ISOTOPE CONTAINER
+	-----------------
+	add needed macros
+#}
+
+<div class="isotope-listing">
+  <div class="isotope-listing__container">
+    <div class="isotope-listing__row row--search">
+      <div class="isotope-search">
+        {{ isotope_search() }}
+      </div>
+    </div>
+    <div class="isotope-listing__row row--filters">
+      <div class="isotope-filters">
+         {{ checkbox_filters(get_categories(module.items)) }}
+         {{ dropdown_filters(get_categories(module.items)) }}
+         {{ list_filters(get_categories(module.items)) }}
+      </div>
+    </div>
+    <div class="isotope-listing__row row--items">
+	    {% for item in module.items %}
+	      {{ render_item(item) }}
+	    {% endfor %}
+    </div>
+  </div>
+</div>
+
+{#
+	ISOTOPE SCRIPTS
+	--------------
+	handle load - create grid
+	handle checkboxes - filter based on combination of selections from filters
+	handle search click & submit
+#}
+
+{% require_js position="footer" %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha512-Zq2BOxyhvnRFXu0+WE6ojpZLOU2jdnqbrM1hmVdGzyeCa1DgM3X5Q4A/Is9xA1IkbUeDd7755dNNI/PzSf2Pew==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+	
+  $(document).ready(function() {
+    
+    var filters = $('.isotope-filters');
+    var grid = $('.isotope-listing__row.row--filters').isotope({
+      itemSelector: '.isotope-list__item',
+      layoutMode: 'fitRows'
+    });
+    
+    $(document).on('change', "input[type='checkbox']", function() {
+      var checkboxes = $(this).closest(".isotope-filters").find("input"),
+          grid = $(this).closest(".isotope-listing").find('.isotope-list'),
+          filters = [],
+          count = checkboxes.length,
+          filter_grid = function(values) {
+            grid.isotope({ filter: values });
+          };
+      $.each(checkboxes, function(i) {
+        if(this.checked) {
+          var filterValue = $(this).data('filter');
+          filters.push(filterValue);
+        }
+        if(i==(count-1)) {
+          filter_grid(filters.toString());
+        }
+      });      
+    });
+    
+    var reset_filter = function(filter) {
+      var link = filter.find(".show-options").find("a"),
+          title = link.data("title");
+      link.text("Select " + title);
+    };
+    
+    $('.filter__options').each(function() {
+		var this_filter = $(this).closest(".filter"),
+			title = this_filter.find(".show-options").find("a").data("title");
+			this_filter.find("li").on('click', function() {
+			  var filterValue = $(this).find("a").attr('data-filter'),
+			      filterName = $(this).find("a").text(),
+			      grid = $(this).closest(".isotope-listing__row.row--items");
+			  $(this).parent().addClass("active").siblings().removeClass("active");
+			  grid.isotope({ filter: filterValue });
+			  if (filterValue != "*") {
+			        this_filter.find(".show-options").find("a").empty().text(title + ": " + filterName);
+			        reset_filter(this_filter);
+			  } else {
+			    	reset_filter(this_filter);
+			  }
+		});
+    });
+    
+    $('.filter--list').on( 'click', 'a', function() {
+      var filterValue = $(this).attr('data-filter'),
+          filterName = $(this).text(),
+          grid = $(this).closest(".isotope-listing").find(".row--items");
+      $(this).parent().addClass("active").siblings().removeClass("active");
+      grid.isotope({ filter: filterValue });
+    });
+
+    
+    var search_items = function(term) {
+      var search_term = term;
+      grid.isotope({ filter: function() {
+        var name = $(this).find('h3').text().toLowerCase();
+        return name.match(search_term);
+      } });
+    };
+    
+    $(document).on('click', "#search_submit", function() {
+      var term = $("#isotope_search").val();
+      search_items(term);
+    });
+    
+    $(document).on('input', "#isotope_search", function() {
+      var term = $(this).val();
+      search_items(term);
+    });
+    
+  });
+  
+</script>
+{% end_require_js %}

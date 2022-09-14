@@ -1,0 +1,137 @@
+{#
+	MACROS
+	------
+	best place for repeater objects, svgs
+	here they are out of the way and can be easily edited
+#}
+
+{% macro svg_icon(name) %}
+	{% if name == "this_icon" %}
+		<svg id="this_icon"></svg>
+	{% endif %}
+{% endmacro %}
+
+{% macro render_repeater(item) %}
+	<div class="module-name__item module-item">
+		<div class="module-item__image" style="background-image:url('{{ item.img.src }}');">
+			<img src="{{ item.img.src }}" width="{{ item.img.width }}" height="{{ item.img.height }}" alt="{{ item.img.alt }}" style="width:100%;height:0;overflow:hidden;" />
+		</div>
+		<div class="module-item__content">
+			{{ item.content }}
+		</div>
+	</div>
+{% endmacro %}
+
+{#
+	CONTENT
+	-------
+	be consistent with naming conventions
+	make the id the module name to easily target this module only
+#}
+
+<div id="{{ name }}" class="module-name">
+	<div class="module-name__container">
+		<div class="module-name__row">
+			{% for item in module.items %}
+				{{ render_repeater(item) }}
+			{% endfor %}
+		</div>
+	</div>
+</div>
+
+{#
+	STYLES 
+	------
+	use crossbrowser style macros for crossbrowser compatibility
+	make the id the module name to easily target this module only
+#}
+
+{% require_css %}
+
+<style>
+	
+	{% macro transition(value) %}-webkit-transition: {{ value }};-moz-transition: {{ value }};-o-transition: {{ value }};-ms-transition: {{ value }};transition: {{ value }};{% endmacro %}
+	{% macro borderRadius(value) %}-webkit-border-radius: {{ value }};-moz-border-radius: {{ value }};-o-border-radius: {{ value }};-ms-border-radius: {{ value }};border-radius: {{ value }};{% endmacro %}
+	{% macro boxShadow(value) %}-webkit-box-shadow: {{ value }};-moz-box-shadow: {{ value }};-o-box-shadow: {{ value }};-ms-box-shadow: {{ value }};box-shadow: {{ value }};{% endmacro %}
+	{% macro textShadow(value) %}-webkit-text-shadow: {{ value }};-moz-text-shadow: {{ value }};-o-text-shadow: {{ value }};-ms-text-shadow: {{ value }};text-shadow: {{ value }};{% endmacro %}
+	{% macro transform(value) %}-webkit-transform: {{ value }};-moz-transform: {{ value }};-o-transform: {{ value }};-ms-transform: {{ value }}; transform: {{ value }};{% endmacro %}
+	
+	{% macro flex_grid(obj, break, col_num, vert_spacing, horiz_spacing) %}
+	  {% set width =  1 / col_num * 100 %}
+	  {% set row_two = col_num + 1 %}
+	  {% set next = break + 1 %}
+	  {% set margin_adjust = horiz_spacing * ((col_num - 1) / col_num) %}
+	  @media screen and (max-width: {{ break }}px) { {{ obj }} > *:not(:last-child) { margin-bottom: {{ vert_spacing }}px; } }
+	  @media screen and (min-width: {{ next }}px) { 
+	    {{ obj }} { display: flex; flex-wrap: wrap; }
+	    {{ obj }} > * { display: inline-block; width: calc({{ width }}% - {{ margin_adjust }}px); margin-right: {{ horiz_spacing }}px !important; margin-bottom: 0; }
+	    {{ obj }} > *:nth-child({{ col_num }}n) { margin-right: 0 !important; }
+	    {{ obj }} > *:nth-child(1n+{{ row_two }}) { margin-top:  {{ vert_spacing }}px; }
+	  }		
+	{% endmacro %}
+	
+	{{ flex_grid(".module-name__row", 767, 3, 20, 20) }}
+	
+	#{{ name }} {
+		
+	}
+	
+	/* DESKTOP ONLY STYLES */
+	@media screen and (min-width: 768px) { 
+	    #{{ name }} {
+		
+		}
+	}
+	
+	/* MOBILE ONLY STYLES */
+	@media screen and (max-width: 767px) { 
+	    #{{ name }} {
+		
+		}
+	}
+	
+</style>
+
+{% end_require_css %}
+
+
+{#
+	SCRIPTS
+	-------
+	position in the footer for page speed optimization
+	use only underscores or scriptCase
+	wrap functions in variables to easily turn them on and off for troubleshooting
+#}
+
+{% require_js position="footer" %}
+
+<script>
+	
+	// IF FUNCTION REQUIRES JQUERY
+	$(document).ready(function() {
+		
+		var init_module = function() {
+				var module = $(".module-name");
+				console.log("module init")
+			};
+			
+		init_module();
+		
+		// FOR FORMS --> Wait until the form has loaded or been submitted
+		window.addEventListener('message', event => {
+			
+		    if(event.data.type === 'hsFormCallback' && event.data.eventName === 'onFormReady') {
+		      
+		    }
+		    
+		    if(event.data.type === 'hsFormCallback' && event.data.eventName === 'onFormSubmit') {
+		      
+		    }
+		    
+		});
+		
+	});
+	
+</script>
+
+{% end_require_js %}
